@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config()
 
 const app = express()
@@ -31,10 +31,19 @@ async function run() {
         await client.connect();
 
         const craftCollection = client.db('textileArt').collection('crafts')
+        const userCollection = client.db('textileArt').collection('user')
+
 
         app.get('/crafts', async (req, res) => {
             const cursor = craftCollection.find()
             const result = await cursor.toArray()
+            res.send(result)
+        })
+
+        app.get('/crafts/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await craftCollection.findOne(query)
             res.send(result)
         })
 
@@ -43,6 +52,41 @@ async function run() {
             const result = await craftCollection.insertOne(newaCraft)
             res.send(result)
         })
+
+        app.get('/users/:email', async (req, res) => {
+            const email = req.params.email
+            // console.log(email)
+            const query = { email }
+            const result = await userCollection.findOne(query)
+            console.log(result)
+            res.send(result)
+        })
+
+        app.get('/users', async (req, res) => {
+            const cursor = userCollection.find()
+            const result = await cursor.toArray()
+            res.send(result)
+        })
+
+        app.post('/users', async (req, res) => {
+            const user = req.body
+            const result = await userCollection.insertOne(user)
+            res.send(result)
+        })
+
+        // match user and craft items 
+        app.get('/crafts/user/:email', async (req, res) => {
+            const email = req.params.email
+
+            // const query = { email }
+            // const user = await userCollection.findOne(query)
+            
+            // Find crafts matching the user's email
+            const crafts = await craftCollection.find({ email }).toArray();
+            console.log(crafts)
+
+            res.send(crafts)
+        });
 
 
         // Send a ping to confirm a successful connection
