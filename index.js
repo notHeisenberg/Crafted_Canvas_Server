@@ -59,6 +59,14 @@ async function run() {
             const options = { upsert: true }
             const update = req.body;
             console.log(update)
+            // Fields to be unset (removed)
+            const fieldsToRemove = {
+                description: "",
+                processingTime: "",
+                status: "",
+                subcategory: ""
+                // Add more fields to remove here if needed
+            };
             const updatedCraft = {
                 $set: {
                     image: update.image,
@@ -67,8 +75,11 @@ async function run() {
                     short_description: update.short_description,
                     price: update.price,
                     rating: update.rating,
-                    customization: update.customization, processing_time: update.processing_time, stockStatus: update.stockStatus
-                }
+                    customization: update.customization,
+                    processing_time: update.processing_time,
+                    stockStatus: update.stockStatus
+                },
+                $unset: fieldsToRemove // Use $unset to remove fields
             }
 
             const result = await craftCollection.updateOne(filter, updatedCraft, options)
