@@ -53,12 +53,43 @@ async function run() {
             res.send(result)
         })
 
+        app.put('/crafts/:id', async (req, res) => {
+            const id = req.params.id
+            const filter = { _id: new ObjectId(id) }
+            const options = { upsert: true }
+            const update = req.body;
+            console.log(update)
+            const updatedCraft = {
+                $set: {
+                    image: update.image,
+                    item_name: update.item_name,
+                    subcategory_Name: update.subcategory_Name,
+                    short_description: update.short_description,
+                    price: update.price,
+                    rating: update.rating,
+                    customization: update.customization, processing_time: update.processing_time, stockStatus: update.stockStatus
+                }
+            }
+
+            const result = await craftCollection.updateOne(filter, updatedCraft, options)
+            res.send(result)
+        })
+
+        app.delete('/crafts/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await craftCollection.deleteOne(query)
+            console.log(result)
+            res.send(result)
+        })
+
+        // User informations
         app.get('/users/:email', async (req, res) => {
             const email = req.params.email
             // console.log(email)
             const query = { email }
             const result = await userCollection.findOne(query)
-            console.log(result)
+            // console.log(result)
             res.send(result)
         })
 
@@ -80,10 +111,10 @@ async function run() {
 
             // const query = { email }
             // const user = await userCollection.findOne(query)
-            
+
             // Find crafts matching the user's email
             const crafts = await craftCollection.find({ email }).toArray();
-            console.log(crafts)
+            // console.log(crafts)
 
             res.send(crafts)
         });
