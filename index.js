@@ -28,12 +28,18 @@ const client = new MongoClient(uri, {
 async function run() {
     try {
         // Connect the client to the server	(optional starting in v4.7)
-        await client.connect();
+        // await client.connect();
 
         const craftCollection = client.db('textileArt').collection('crafts')
         const userCollection = client.db('textileArt').collection('user')
+        const subcatagoryCollection = client.db('textileArt').collection('subcatagory')
 
 
+        app.get('/subcatagory', async (req, res) => {
+            const cursor = subcatagoryCollection.find()
+            const result = await cursor.toArray()
+            res.send(result)
+        })
         app.get('/crafts', async (req, res) => {
             const cursor = craftCollection.find()
             const result = await cursor.toArray()
@@ -47,6 +53,13 @@ async function run() {
             res.send(result)
         })
 
+        // Endpoint to fetch crafts by subcategory
+        app.get('/crafts/subcategory/:subcategory', async (req, res) => {
+            const subcategoryName = req.params.subcategory;
+            const crafts = await craftCollection.find({ subcategory_Name: subcategoryName }).toArray();
+            res.send(crafts);
+        });
+
         app.post('/crafts', async (req, res) => {
             const newaCraft = req.body
             const result = await craftCollection.insertOne(newaCraft)
@@ -58,7 +71,7 @@ async function run() {
             const filter = { _id: new ObjectId(id) }
             const options = { upsert: true }
             const update = req.body;
-            console.log(update)
+
             // Fields to be unset (removed)
             const fieldsToRemove = {
                 description: "",
